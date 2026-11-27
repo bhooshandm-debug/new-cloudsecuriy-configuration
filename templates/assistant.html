@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}CloudSec AI Assistant{% endblock %}
+{% block content %}
+<section class="assistant-page" aria-labelledby="assistant-page-title">
+  <div style="margin-bottom:1.5rem;border-bottom:1px solid var(--border-color);padding-bottom:1.25rem;">
+    <p class="dashboard-eyebrow">GEMINI CLOUD INTELLIGENCE &middot; AWS &middot; AZURE &middot; GCP</p>
+    <h1 id="assistant-page-title">CloudSec AI Security Assistant</h1>
+    <p class="dashboard-subtitle">Consult the AI security model on remediation advice, threat analysis, root cause explanations, and CIS benchmark alignment.</p>
+    <p class="assistant-disclosure" style="border-radius:var(--radius-md);margin-top:0.75rem;">
+      Your security questions and latest failed findings are analyzed by Google Gemini. Cloud credentials and secret keys are <strong>never</strong> transmitted.
+    </p>
+  </div>
+
+  <div class="assistant-tools" style="justify-content:flex-end;border-top:none;padding:0 0 0.75rem;">
+    <button type="button" id="assistant-new">New conversation</button>
+    <button type="button" id="assistant-clear">Clear history</button>
+  </div>
+
+  <div class="assistant-messages assistant-page-messages" id="assistant-messages" role="log" aria-live="polite" aria-relevant="additions">
+    <p class="assistant-message assistant-response">
+      Hello! I am your CloudSec AI security analyst. Ask me about findings from your latest audit, remediation steps, or best security architecture practices for AWS, Azure, and Google Cloud.
+    </p>
+  </div>
+
+  <div class="assistant-suggestions" aria-label="Suggested questions" style="padding:0.75rem 0 1rem;background:transparent;">
+    <button type="button" data-prompt="Explain my latest audit and identify the most urgent failed checks.">Prioritize my audit risks</button>
+    <button type="button" data-prompt="How do I safely configure AWS S3 bucket policies to block public exposure?">S3 Bucket Security</button>
+    <button type="button" data-prompt="How should I remediate Root Account MFA missing in AWS?">Fix Root MFA</button>
+    <button type="button" data-prompt="What are my highest-priority security risks across connected environments?">Executive Risk Summary</button>
+  </div>
+
+  <form class="assistant-form" id="assistant-form" style="border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:0.85rem;background:#F8FAFC;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" data-user-id="{{ current_user.id }}">
+    <label class="sr-only" for="assistant-input">Message CloudSec AI Assistant</label>
+    <textarea id="assistant-input" name="message" rows="2" maxlength="1000" placeholder="Ask a security question, request remediation code, or ask about compliance..." required></textarea>
+    <button class="assistant-send" id="assistant-send" type="submit">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Send
+    </button>
+  </form>
+</section>
+{% endblock %}

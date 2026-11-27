@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080D1A"/>
+      <stop offset="50%" stop-color="#0D152B"/>
+      <stop offset="100%" stop-color="#111C38"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0EA5E9"/>
+      <stop offset="50%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="20%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="#0EA5E9" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#080D1A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect width="1200" height="4" fill="url(#accent)"/>
+
+  <!-- Subtle Blueprint Grid -->
+  <g stroke="rgba(255,255,255,0.04)" stroke-width="1">
+    <line x1="80" y1="0" x2="80" y2="630"/>
+    <line x1="200" y1="0" x2="200" y2="630"/>
+    <line x1="320" y1="0" x2="320" y2="630"/>
+    <line x1="440" y1="0" x2="440" y2="630"/>
+    <line x1="560" y1="0" x2="560" y2="630"/>
+    <line x1="680" y1="0" x2="680" y2="630"/>
+    <line x1="800" y1="0" x2="800" y2="630"/>
+    <line x1="920" y1="0" x2="920" y2="630"/>
+    <line x1="1040" y1="0" x2="1040" y2="630"/>
+    <line x1="1120" y1="0" x2="1120" y2="630"/>
+    
+    <line x1="0" y1="80" x2="1200" y2="80"/>
+    <line x1="0" y1="180" x2="1200" y2="180"/>
+    <line x1="0" y1="280" x2="1200" y2="280"/>
+    <line x1="0" y1="380" x2="1200" y2="380"/>
+    <line x1="0" y1="480" x2="1200" y2="480"/>
+    <line x1="0" y1="560" x2="1200" y2="560"/>
+  </g>
+
+  <!-- Brand Symbol / Shield -->
+  <g transform="translate(100, 110)">
+    <rect width="84" height="84" rx="20" fill="#111C35" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+    <path d="M42 16L18 26V42C18 57.2 28.2 70.8 42 75C55.8 70.8 66 57.2 66 42V26L42 16Z" fill="#0C1428" stroke="#0EA5E9" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M30 42L38 50L54 34" stroke="#38BDF8" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Product Brand & Badges -->
+  <text x="210" y="152" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif" font-size="38" font-weight="800" fill="#F8FAFC" letter-spacing="-0.02em">CloudSec</text>
+  <text x="210" y="182" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="600" fill="#38BDF8" letter-spacing="0.1em">ENTERPRISE CLOUD SECURITY POSTURE MANAGEMENT</text>
+
+  <!-- Main Headline -->
+  <text x="100" y="295" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="800" fill="#FFFFFF" letter-spacing="-0.025em">
+    Continuous Zero-Trust Multi-Cloud
+  </text>
+  <text x="100" y="360" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="800" fill="url(#accent)" letter-spacing="-0.025em">
+    Security &amp; Compliance Auditing
+  </text>
+
+  <!-- Supporting Subtitle -->
+  <text x="100" y="420" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="400" fill="#94A3B8">
+    Automated CIS benchmark evaluation and AI-assisted vulnerability remediation across AWS, Azure, and GCP.
+  </text>
+
+  <!-- Cloud Provider Pills -->
+  <g transform="translate(100, 480)">
+    <!-- AWS Pill -->
+    <rect x="0" y="0" width="160" height="48" rx="8" fill="#13203C" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <circle cx="28" cy="24" r="8" fill="#FF9900"/>
+    <text x="46" y="30" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="16" font-weight="700" fill="#F8FAFC">AWS Cloud</text>
+
+    <!-- Azure Pill -->
+    <rect x="180" y="0" width="180" height="48" rx="8" fill="#13203C" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <circle cx="208" cy="24" r="8" fill="#0089D6"/>
+    <text x="226" y="30" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="16" font-weight="700" fill="#F8FAFC">Microsoft Azure</text>
+
+    <!-- GCP Pill -->
+    <rect x="380" y="0" width="180" height="48" rx="8" fill="#13203C" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <circle cx="408" cy="24" r="8" fill="#4285F4"/>
+    <text x="426" y="30" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="16" font-weight="700" fill="#F8FAFC">Google Cloud</text>
+
+    <!-- CIS Tag -->
+    <rect x="580" y="0" width="220" height="48" rx="8" fill="rgba(14, 165, 233, 0.12)" stroke="rgba(14, 165, 233, 0.3)" stroke-width="1"/>
+    <text x="610" y="30" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="15" font-weight="700" fill="#38BDF8">✓ CIS &amp; NIST Audits</text>
+
+    <!-- Zero-Trust Tag -->
+    <rect x="820" y="0" width="260" height="48" rx="8" fill="rgba(16, 185, 129, 0.12)" stroke="rgba(16, 185, 129, 0.3)" stroke-width="1"/>
+    <text x="850" y="30" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="15" font-weight="700" fill="#34D399">🔒 Zero-Trust Read-Only</text>
+  </g>
+
+  <!-- Bottom Terminal Status Bar -->
+  <rect x="0" y="590" width="1200" height="40" fill="#060A14"/>
+  <text x="100" y="615" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" fill="#64748B">
+    cloudsec.io &middot; STATUS: OPERATIONAL &middot; CRYPTOGRAPHIC STORAGE: FERNET &middot; RUNTIME ENGINE: PROWLER
+  </text>
+</svg>

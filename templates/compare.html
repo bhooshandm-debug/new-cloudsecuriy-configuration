@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Compare Scans{% endblock %}
+{% block content %}
+<section class="compare-page">
+  <nav class="breadcrumbs" aria-label="Breadcrumbs">
+    <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+    <span class="separator" aria-hidden="true">/</span>
+    <a href="{{ url_for('scans.index') }}">Security Audits</a>
+    <span class="separator" aria-hidden="true">/</span>
+    <span class="current">Posture Diff</span>
+  </nav>
+  <div class="compare-hero">
+    <div style="flex:1;">
+      <p class="compare-eyebrow">POSTURE DRIFT &middot; DELTA ANALYSIS</p>
+      <h1>Scan Comparison</h1>
+      <p class="compare-description">Compare security snapshots of the same account across time to observe newly introduced vulnerabilities, persisting issues, and remediated controls.</p>
+
+      <form method="get" class="compare-form">
+        <label>
+          Earlier Baseline Scan
+          <select name="base" required>
+            <option value="" disabled {{ 'selected' if not base }}>Choose base scan</option>
+            {% for s in scans %}
+            <option value="{{ s.id }}" {{ 'selected' if base and base.id == s.id }}>
+              #{{ s.id }} {{ s.account.name }} ({{ s.created_at.strftime('%Y-%m-%d %H:%M') }})
+            </option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          Later Target Scan
+          <select name="target" required>
+            <option value="" disabled {{ 'selected' if not target }}>Choose comparison scan</option>
+            {% for s in scans %}
+            <option value="{{ s.id }}" {{ 'selected' if target and target.id == s.id }}>
+              #{{ s.id }} {{ s.account.name }} ({{ s.created_at.strftime('%Y-%m-%d %H:%M') }})
+            </option>
+            {% endfor %}
+          </select>
+        </label>
+        <button class="primary compare-submit" type="submit">Run Comparison</button>
+      </form>
+    </div>
+  </div>
+
+  {% if not scans or scans|length < 2 %}
+  <div class="accounts-card" style="text-align:center;padding:var(--space-48) var(--space-32);">
+    <h2 style="font-family:var(--font-display);font-size:var(--fs-xl);margin-bottom:var(--space-8);">Insufficient Scan History</h2>
+    <p style="color:var(--text-muted);max-width:480px;margin:0 auto var(--space-24);">Perform at least two scans on a cloud account to generate comparative drift and remediation tracking.</p>
+    <a class="button primary" href="{{ url_for('cloud_accounts.index') }}">Trigger a Scan</a>
+  </div>
+  {% elif not result %}
+  <div class="accounts-card" style="text-align:center;padding:var(--space-48) var(--space-32);">
+    <h2 style="font-family:var(--font-display);font-size:var(--fs-xl);margin-bottom:var(--space-8);">Select Two Scans to Compare</h2>
+    <p style="color:var(--text-muted);max-width:480px;margin:0 auto;">Choose an earlier baseline run and a recent target scan to uncover posture divergence.</p>
+  </div>
+  {% endif %}
+
+  {% if result %}
+  <div class="compare-results">
+    <div class="compare-result-heading" style="margin-bottom:var(--space-16);">
+      <div>
+        <p class="dashboard-eyebrow" style="margin-bottom:var(--space-4);">DRIFT REPORT</p>
+        <h2 style="font-family:var(--font-display);font-size:var(--fs-xl);margin:0;">{{ target.account.name }}</h2>
+      </div>
+      <div style="font-size:var(--fs-sm);color:var(--text-muted);font-weight:500;">
+        Baseline <strong>#{{ base.id }}</strong> &rarr; Target <strong>#{{ target.id }}</strong>
+      </div>
+    </div>
+
+    <div class="compare-summary">
+      <article class="compare-stat compare-new">
+        <span>New issues</span>
+        <strong>{{ result.new_issues|length }}</strong>
+        <small>Newly failing checks</small>
+      </article>
+      <article class="compare-stat compare-resolved">
+        <span>Resolved</span>
+        <strong>{{ result.resolved|length }}</strong>
+        <small>Issues cleared</small>
+      </article>
+      <article class="compare-stat compare-persisting">
+        <span>Still failing</span>
+        <strong>{{ result.persisting|length }}</strong>
+        <small>Open in both scans</small>
+      </article>
+    </div>
+
+    {% macro rows(items, show_now=false) %}
+    <div class="compare-table-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Severity</th>
+            <th>Check / Vulnerability</th>
+            <th>Resource</th>
+            <th>Region</th>
+            {% if show_now %}<th>Current Status</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for f in items %}
+          <tr>
+            <td><span class="badge sev-{{ f.severity }}">{{ f.severity }}</span></td>
+            <td>
+              <strong style="color:var(--text-primary);display:block;">{{ f.title }}</strong>
+              <small class="mono muted">{{ f.check_id }}</small>
+            </td>
+            <td class="mono" style="font-size:var(--fs-xs);">{{ f.resource or '-' }}</td>
+            <td style="font-size:var(--fs-sm);color:var(--text-muted);">{{ f.region or 'global' }}</td>
+            {% if show_now %}
+            <td><span class="badge st-completed">{{ f.now }}</span></td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endmacro %}
+
+    <section style="margin-bottom:var(--space-32);">
+      <h3 style="font-family:var(--font-display);font-size:var(--fs-lg);display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-12);">
+        <span>New issues</span>
+        <span class="badge sev-critical">{{ result.new_issues|length }}</span>
+      </h3>
+      {% if result.new_issues %}{{ rows(result.new_issues) }}{% else %}
+      <p style="color:var(--text-muted);font-size:var(--fs-sm);background:#FFFFFF;padding:var(--space-16);border-radius:var(--radius-sm);border:1px solid var(--border-color);">
+        No new failures since scan #{{ base.id }}.
+      </p>
+      {% endif %}
+    </section>
+
+    <section style="margin-bottom:var(--space-32);">
+      <h3 style="font-family:var(--font-display);font-size:var(--fs-lg);display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-12);">
+        <span>Resolved</span>
+        <span class="badge st-completed">{{ result.resolved|length }}</span>
+      </h3>
+      {% if result.resolved %}{{ rows(result.resolved, true) }}{% else %}
+      <p style="color:var(--text-muted);font-size:var(--fs-sm);background:#FFFFFF;padding:var(--space-16);border-radius:var(--radius-sm);border:1px solid var(--border-color);">
+        Nothing was resolved between these scans.
+      </p>
+      {% endif %}
+    </section>
+
+    <section style="margin-bottom:var(--space-32);">
+      <h3 style="font-family:var(--font-display);font-size:var(--fs-lg);display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-12);">
+        <span>Still failing</span>
+        <span class="badge sev-medium">{{ result.persisting|length }}</span>
+      </h3>
+      {% if result.persisting %}{{ rows(result.persisting) }}{% else %}
+      <p style="color:var(--text-muted);font-size:var(--fs-sm);background:#FFFFFF;padding:var(--space-16);border-radius:var(--radius-sm);border:1px solid var(--border-color);">
+        No recurring vulnerabilities detected.
+      </p>
+      {% endif %}
+    </section>
+  </div>
+  {% endif %}
+
+  <div class="compare-footnote">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    <span>Delta comparison isolates drift and verifies effective remediation across infrastructure deployment cycles.</span>
+  </div>
+</section>
+{% endblock %}

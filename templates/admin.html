@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Administration{% endblock %}
+{% block content %}
+<section class="admin-page" style="display:flex;flex-direction:column;gap:1.5rem;">
+  <nav class="breadcrumbs" aria-label="Breadcrumbs">
+    <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+    <span class="separator" aria-hidden="true">/</span>
+    <span class="current">Administration</span>
+  </nav>
+  <div style="border-bottom:var(--border-subtle);padding-bottom:1.25rem;">
+    <p class="dashboard-eyebrow">SYSTEM GOVERNANCE &middot; ROLE-BASED ACCESS</p>
+    <h1>Administration</h1>
+    <p class="dashboard-subtitle">Manage system users, access privileges, and audit log trails.</p>
+  </div>
+
+  <section>
+    <h2 style="font-family:var(--font-display);font-size:var(--fs-xl);margin-bottom:var(--space-16);">Authorized Operators</h2>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Member Since</th>
+            <th style="text-align:right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for u in users %}
+          <tr>
+            <td><strong style="color:var(--text-primary);">{{ u.username }}</strong></td>
+            <td>{{ u.email }}</td>
+            <td>
+              <span class="badge {% if u.role == 'admin' %}st-completed{% else %}st-pending{% endif %}">
+                {{ u.role }}
+              </span>
+            </td>
+            <td style="color:var(--text-muted);font-size:var(--fs-sm);">{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+            <td style="text-align:right;">
+              {% if u.id != current_user.id %}
+              <form method="post" action="{{ url_for('admin.set_role', user_id=u.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="role" value="{{ 'user' if u.role == 'admin' else 'admin' }}">
+                <button class="small" type="submit">{{ 'Demote to user' if u.role == 'admin' else 'Promote to admin' }}</button>
+              </form>
+              {% else %}
+              <span style="font-size:var(--fs-xs);color:var(--text-muted);">Current Operator</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 style="font-family:var(--font-display);font-size:var(--fs-xl);margin-bottom:var(--space-16);">Security Audit Log</h2>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Timestamp (UTC)</th>
+            <th>Operator</th>
+            <th>Action</th>
+            <th>Execution Detail</th>
+            <th>IP Address</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for l in logs %}
+          <tr>
+            <td style="color:var(--text-muted);font-size:var(--fs-sm);">{{ l.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            <td><strong>{{ l.user.username if l.user else '-' }}</strong></td>
+            <td><span class="badge st-completed" style="font-size:var(--fs-xs);">{{ l.action }}</span></td>
+            <td class="mono" style="font-size:var(--fs-xs);color:var(--text-secondary);">{{ l.detail }}</td>
+            <td class="mono" style="font-size:var(--fs-xs);color:var(--text-muted);">{{ l.ip_address }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>
+{% endblock %}

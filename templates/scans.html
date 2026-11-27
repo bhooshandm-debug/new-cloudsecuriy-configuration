@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Security Audits{% endblock %}
+{% block content %}
+<section class="scans-page">
+  <nav class="breadcrumbs" aria-label="Breadcrumbs">
+    <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+    <span class="separator" aria-hidden="true">/</span>
+    <span class="current">Security Audits</span>
+  </nav>
+  <div class="scans-heading">
+    <div>
+      <p class="scans-eyebrow">CONFIGURATION POSTURE &middot; RUNTIME</p>
+      <p class="scans-intro">Inspect automated configuration checks across your environments and track security posture changes over time.</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      {% for a in accounts %}
+        <form method="post" action="{{ url_for('scans.start', account_id=a.id) }}" style="display:inline;margin:0;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="mode" value="quick">
+          <button class="primary small" style="cursor:pointer;" title="Trigger ~30s fast baseline audit">⚡ Quick Scan · {{ a.name }}</button>
+        </form>
+      {% endfor %}
+      <a class="button small" href="{{ url_for('scans.compare') }}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+        Compare two scans
+      </a>
+    </div>
+  </div>
+
+  {% if scans %}
+  <div class="scans-table-wrap">
+    <table class="scans-table">
+      <thead>
+        <tr>
+          <th>Scan ID</th>
+          <th>Account</th>
+          <th>Audit Mode</th>
+          <th>Status</th>
+          <th>Total Checks</th>
+          <th>Failed Checks</th>
+          <th>Timestamp</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for s in scans %}
+        <tr data-scan-id="{{ s.id }}" data-status-url="{{ url_for('scans.status', scan_id=s.id) }}" data-active="{{ 'true' if s.active else 'false' }}">
+          <td><strong style="color:var(--text-primary);">#{{ s.id }}</strong></td>
+          <td>
+            <span class="provider-tag tag-{{ s.account.provider }}">{{ s.account.provider|upper }}</span>
+            <span style="font-weight:500;">{{ s.account.name }}</span>
+          </td>
+          <td>
+            <span style="color:var(--text-secondary);font-size:var(--fs-sm);">
+              {{ 'Demo sample' if s.mode == 'demo' else 'Quick Baseline (~30s)' if s.mode == 'quick' else 'Prowler Full Audit' }}
+            </span>
+          </td>
+          <td>
+            <span class="badge st-{{ s.status }}">{{ s.status }}</span>
+            {% if s.active %}<br><small data-scan-progress style="color:var(--text-muted);font-size:var(--fs-xs);">Starting…</small>{% endif %}
+            {% if s.error %}<br><small class="err" style="color:var(--sev-critical);font-size:var(--fs-xs);">{{ s.error }}</small>{% endif %}
+          </td>
+          <td><strong>{{ s.total_findings }}</strong></td>
+          <td><strong style="color:{% if s.failed_findings > 0 %}var(--sev-critical){% else %}var(--sev-pass){% endif %};">{{ s.failed_findings }}</strong></td>
+          <td style="color:var(--text-muted);font-size:var(--fs-sm);">{{ s.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>
+            {% if s.status == 'completed' %}
+            <div style="display:flex;flex-direction:column;gap:var(--space-4);">
+              <a href="{{ url_for('findings.index', scan_id=s.id) }}" style="font-weight:600;color:var(--primary-navy);display:inline-flex;align-items:center;gap:var(--space-4);">
+                View findings &rarr;
+              </a>
+              {% if s.id in previous %}
+              <a href="{{ url_for('scans.compare', base=previous[s.id], target=s.id) }}" style="font-size:var(--fs-xs);color:var(--text-muted);">
+                Compare with #{{ previous[s.id] }}
+              </a>
+              {% endif %}
+            </div>
+            {% else %}
+            <span style="color:var(--text-subtle);font-size:var(--fs-sm);">-</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="accounts-card" style="text-align:center;padding:var(--space-48) var(--space-32);">
+    <h2 style="font-family:var(--font-display);font-size:var(--fs-xl);margin-bottom:var(--space-8);">No security audits recorded</h2>
+    <p style="color:var(--text-muted);max-width:480px;margin:0 auto var(--space-24);">Start your first scan from the Connected Accounts page to generate real-time security posture evaluations.</p>
+    <a class="button primary" href="{{ url_for('cloud_accounts.index') }}">Go to Cloud Accounts &rarr;</a>
+  </div>
+  {% endif %}
+
+  <div class="scans-footnote">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    <span>Security audits assess cloud configuration against CIS benchmarks, AWS Security Best Practices, and ISO/IEC 27001 requirements.</span>
+  </div>
+</section>
+<script src="{{ url_for('static', filename='js/scans.js', v='3') }}" defer></script>
+{% endblock %}

@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="dashboard" id="dashboard">
+  <header class="dashboard-heading">
+    <div class="dashboard-intro">
+      <p class="dashboard-eyebrow">CONFIGURATION POSTURE</p>
+      <h1>Your cloud security,<br>in one clear view.</h1>
+      <p class="dashboard-subtitle">A living overview of your AWS, Azure, and Google Cloud environments.</p>
+      <a class="hero-action" href="{{ url_for('cloud_accounts.index') }}">Explore accounts <span aria-hidden="true">&#8594;</span></a>
+    </div>
+  </header>
+
+  <section class="dashboard-summary" aria-label="Audit overview">
+    <a class="stat-tile stat-accounts" href="{{ url_for('cloud_accounts.index') }}">
+      <div class="stat-tile-top">
+        <span class="clay-icon-chip" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 19a4.5 4.5 0 0 1-.4-8.98A7.002 7.002 0 0 1 19.5 12a4.5 4.5 0 0 1-2.5 8.24h-10.5Z"/></svg>
+        </span>
+        <span class="status-pill status-active">Inventory</span>
+      </div>
+      <span class="stat-label">Connected accounts</span>
+      <strong class="stat-value" id="stat-accounts">{{ stats.accounts }}</strong>
+      <span class="stat-detail">Account inventory <span aria-hidden="true">&#8599;</span></span>
+    </a>
+    <a class="stat-tile stat-scanned" href="{{ url_for('scans.index') }}">
+      <div class="stat-tile-top">
+        <span class="clay-icon-chip" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </span>
+        <span class="status-pill status-info">Audited</span>
+      </div>
+      <span class="stat-label">Accounts scanned</span>
+      <strong class="stat-value" id="stat-scanned">{{ stats.scanned_accounts }}</strong>
+      <span class="stat-detail">View scan history <span aria-hidden="true">&#8599;</span></span>
+    </a>
+    <a class="stat-tile stat-failed" href="{{ url_for('findings.index', status='FAIL') }}">
+      <div class="stat-tile-top">
+        <span class="clay-icon-chip" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </span>
+        <span class="status-pill {% if stats.failed_total > 0 %}status-warn{% else %}status-pass{% endif %}">{% if stats.failed_total > 0 %}Action Required{% else %}Compliant{% endif %}</span>
+      </div>
+      <span class="stat-label">Failed checks</span>
+      <strong class="stat-value" id="stat-failed">{{ stats.failed_total }}</strong>
+      <span class="stat-detail">Browse findings <span aria-hidden="true">&#8599;</span></span>
+    </a>
+    <a class="stat-tile stat-platforms" href="{{ url_for('cloud_accounts.index') }}">
+      <div class="stat-tile-top">
+        <span class="clay-icon-chip" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </span>
+        <span class="status-pill status-cloud">Multi-Cloud</span>
+      </div>
+      <span class="stat-label">Cloud platforms</span>
+      <strong class="stat-value">03</strong>
+      <span class="stat-detail">AWS · Azure · Google Cloud</span>
+    </a>
+  </section>
+
+  <section class="cloud-coverage" aria-labelledby="coverage-heading">
+    <div class="section-heading">
+      <div><p class="dashboard-eyebrow">MULTI-CLOUD OVERVIEW</p><h2 id="coverage-heading">Cloud coverage</h2></div>
+      <a class="section-link" href="{{ url_for('cloud_accounts.index') }}">Manage accounts <span aria-hidden="true">&#8594;</span></a>
+    </div>
+    <div class="provider-grid">
+      {% for key, label in [('aws','Amazon Web Services'),('azure','Microsoft Azure'),('gcp','Google Cloud')] %}
+      <a class="provider-card provider-{{ key }}" href="{{ url_for('cloud_accounts.index') }}" data-provider-card="{{ key }}">
+        <div class="provider-card-header">
+          <span class="provider-tag tag-{{ key }}">{{ key|upper }}</span>
+          <span class="provider-link-arrow" aria-hidden="true">&#8599;</span>
+        </div>
+        <span class="provider-name">{{ label }}</span>
+        <strong class="provider-accounts" data-provider-accounts="{{ key }}">{{ stats.providers[key].accounts }}</strong>
+        <span class="provider-caption">connected account{% if stats.providers[key].accounts != 1 %}s{% endif %}</span>
+        <span class="provider-meta"><b data-provider-scanned="{{ key }}">{{ stats.providers[key].scanned_accounts }}</b> scanned <span aria-hidden="true">·</span> <b data-provider-failed="{{ key }}">{{ stats.providers[key].failed_total }}</b> failed</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="dashboard-shortcuts" aria-label="Security shortcuts">
+    <a class="shortcut-card shortcut-exposure" href="{{ url_for('findings.index', severity='critical', status='FAIL') }}">
+      <span class="shortcut-icon" aria-hidden="true">!</span><span class="shortcut-title">Critical exposure</span>
+      <span class="shortcut-copy">Jump straight to your highest-risk failed checks.</span><span class="shortcut-go">Review findings &#8594;</span>
+    </a>
+    <a class="shortcut-card shortcut-trends" href="{{ url_for('scans.compare') }}">
+      <span class="shortcut-icon" aria-hidden="true">&#8644;</span><span class="shortcut-title">Posture over time</span>
+      <span class="shortcut-copy">Compare scans and see what changed between runs.</span><span class="shortcut-go">Compare scans &#8594;</span>
+    </a>
+    <a class="shortcut-card shortcut-reports" href="{{ url_for('reports.index') }}">
+      <span class="shortcut-icon" aria-hidden="true">&#8599;</span><span class="shortcut-title">Audit reports</span>
+      <span class="shortcut-copy">Open downloadable reports for completed scans.</span><span class="shortcut-go">View reports &#8594;</span>
+    </a>
+  </section>
+
+  <section class="dashboard-severity" aria-labelledby="severity-heading">
+    <div class="section-heading">
+      <div>
+        <p class="dashboard-eyebrow">LATEST COMPLETED SCANS</p>
+        <h2 id="severity-heading">Failed checks by severity</h2>
+      </div>
+      <p class="severity-total"><strong id="severity-total">{{ stats.failed_total }}</strong> open failures</p>
+    </div>
+    <div class="severity-layout">
+      <div class="sevbar" id="severity-bars" role="group" aria-label="Filter findings by severity">
+        {% for sev in ['critical','high','medium','low','informational'] %}
+          <a class="seg sev-{{ sev }}" data-sev="{{ sev }}" data-value="{{ stats.severities[sev] }}"
+             href="{{ url_for('findings.index', severity=sev, status='FAIL') }}"
+             aria-label="{{ sev|capitalize }}: {{ stats.severities[sev] }} failed checks"
+             title="{{ sev|capitalize }}: {{ stats.severities[sev] }} failed checks"></a>
+        {% endfor %}
+      </div>
+      <ul class="legend">
+        {% for sev in ['critical','high','medium','low','informational'] %}
+          <li><a href="{{ url_for('findings.index', severity=sev, status='FAIL') }}">
+            <i class="dot sev-{{ sev }}" aria-hidden="true"></i>{{ sev|capitalize }}
+            <b data-count="{{ sev }}">{{ stats.severities[sev] }}</b>
+          </a></li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% if not stats.failed_total %}
+      <p class="dashboard-empty">{% if stats.scanned_accounts %}No failed checks in the latest completed scans.{% else %}Nothing scanned yet. <a href="{{ url_for('cloud_accounts.index') }}">Connect an account</a> and run a scan.{% endif %}</p>
+    {% endif %}
+  </section>
+
+  <section class="dashboard-recent" aria-labelledby="recent-heading">
+    <div class="section-heading">
+      <div>
+        <p class="dashboard-eyebrow">ACTIVITY</p>
+        <h2 id="recent-heading">Recent scans</h2>
+      </div>
+      <div class="recent-tools">
+        <label class="sr-only" for="scan-provider-filter">Filter recent scans by cloud</label>
+        <select id="scan-provider-filter" class="scan-filter">
+          <option value="all">All clouds</option><option value="aws">AWS</option><option value="azure">Azure</option><option value="gcp">GCP</option>
+        </select>
+        <a class="section-link" href="{{ url_for('scans.index') }}">All scans <span aria-hidden="true">&#8594;</span></a>
+      </div>
+    </div>
+    {% if recent %}
+      <div class="scroll dashboard-table">
+        <table>
+          <thead><tr><th>Scan</th><th>Account</th><th>Status</th><th>Failed</th><th>Started</th></tr></thead>
+          <tbody>
+          {% for s in recent %}
+            <tr data-scan-provider="{{ s.account.provider }}">
+              <td><a class="scan-link" href="{{ url_for('findings.index', scan_id=s.id) }}">#{{ s.id }}</a></td>
+              <td><span class="provider-tag tag-{{ s.account.provider }}">{{ s.account.provider|upper }}</span> {{ s.account.name }}</td>
+              <td><span class="badge st-{{ s.status }}">{{ s.status }}</span></td>
+              <td>{{ s.failed_findings }}</td>
+              <td>{{ s.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}<p class="dashboard-empty">No scans yet.</p>{% endif %}
+  </section>
+</div>
+<div class="assistant-widget" id="assistant-widget">
+  <section class="assistant-panel" id="assistant-panel" aria-labelledby="assistant-title" hidden>
+    <header class="assistant-header">
+      <div>
+        <p class="assistant-eyebrow">GEMINI CLOUD SECURITY ASSISTANT</p>
+        <h2 id="assistant-title">CloudSec AI Assistant</h2>
+      </div>
+      <button class="assistant-close" id="assistant-close" type="button" aria-label="Close assistant">Close</button>
+    </header>
+    <p class="assistant-disclosure">Your message and latest failed audit findings are sent to Google Gemini for analysis. Cloud credentials are never sent. Gemini only recommends changes; it cannot modify your cloud accounts.</p>
+    <div class="assistant-messages" id="assistant-messages" role="log" aria-live="polite" aria-relevant="additions">
+      <p class="assistant-message assistant-response">Ask for help understanding a finding, choosing a remediation, or using the audit app.</p>
+    </div>
+    <div class="assistant-tools"><button type="button" id="assistant-new">New conversation</button><button type="button" id="assistant-clear">Clear history</button></div>
+    <div class="assistant-suggestions" aria-label="Suggested questions">
+      <button type="button" data-prompt="How should I prioritize my latest failed checks?">Prioritize my checks</button>
+      <button type="button" data-prompt="How do I safely remediate a critical cloud finding?">Fix a critical finding</button>
+    </div>
+    <form class="assistant-form" id="assistant-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" data-user-id="{{ current_user.id }}">
+      <label class="sr-only" for="assistant-input">Message the AI assistant</label>
+      <textarea id="assistant-input" name="message" rows="2" maxlength="1000" placeholder="Ask a security question..." required></textarea>
+      <button class="assistant-send" id="assistant-send" type="submit">Send</button>
+    </form>
+  </section>
+  <button class="assistant-launch" id="assistant-launch" type="button" aria-expanded="false" aria-controls="assistant-panel">
+    <span class="assistant-launch-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M19.5 4.5C12.1 4.5 6 7.8 6 13.5a6 6 0 0 0 6 6c5.7 0 9-6.1 7.5-15Z"/><path d="M5 20c2.4-4.1 5.8-7.2 10.2-10"/></svg></span> Ask security guide
+  </button>
+</div>
+{% endblock %}

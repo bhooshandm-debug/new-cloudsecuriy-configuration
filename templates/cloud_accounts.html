@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Cloud Accounts{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/accounts.css', v='7') }}">
+<div class="accounts-page">
+  <div class="accounts-container">
+    <nav class="breadcrumbs" aria-label="Breadcrumbs">
+      <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+      <span class="separator" aria-hidden="true">/</span>
+      <span class="current">Cloud Providers</span>
+    </nav>
+    <section class="accounts-hero">
+      <div class="accounts-hero-copy-block">
+        <p class="account-eyebrow">ENVIRONMENT CONFIGURATION &middot; INVENTORY</p>
+        <h1 class="accounts-hero-title">Connect your cloud</h1>
+        <p class="accounts-hero-copy">Securely connect your AWS, Azure, or Google Cloud environment using read-only credentials for automated configuration audits.</p>
+        <a class="accounts-hero-action" href="#account-connect">Connect an account <span aria-hidden="true">&darr;</span></a>
+      </div>
+      <div class="accounts-hero-art" role="img" aria-label="Cloud security shield illustration">
+        <svg viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="100" cy="80" r="64" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="4 6"/>
+          <path d="M100 32L60 52V88C60 114 77 138 100 144C123 138 140 114 140 88V52L100 32Z" fill="#0F172A" stroke="#38BDF8" stroke-width="2"/>
+          <rect x="88" y="78" width="24" height="18" rx="3" fill="#38BDF8"/>
+          <path d="M93 78V71C93 67.1 96.1 64 100 64C103.9 64 107 67.1 107 71V78" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="100" cy="86" r="2" fill="#0F172A"/>
+        </svg>
+        <span>Zero-Trust Read-Only Audits</span>
+      </div>
+    </section>
+
+    {% if accounts %}
+    <div class="accounts-table-wrap">
+      <table class="accounts-table">
+        <thead>
+          <tr>
+            <th>Account Name</th>
+            <th>Provider</th>
+            <th>Account ID / Subscription</th>
+            <th>Connected Since</th>
+            <th class="actions">Audit Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for a in accounts %}
+          <tr>
+            <td>
+              <strong style="color:var(--text-primary);display:block;">{{ a.name }}</strong>
+            </td>
+            <td>
+              <span class="provider-tag tag-{{ a.provider }}">{{ a.provider|upper }}</span>
+            </td>
+            <td class="mono">{{ a.identifier or '-' }}</td>
+            <td style="color:var(--text-muted);font-size:var(--fs-sm);">{{ a.created_at.strftime('%b %d, %Y') }}</td>
+            <td class="actions">
+              <form method="post" action="{{ url_for('scans.start', account_id=a.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                {% if a.provider == 'aws' %}
+                <button class="primary small" name="mode" value="quick" title="Focused AWS checks, completes in ~30s">⚡ Quick Scan · ~30s</button>
+                <button class="small" name="mode" value="full" title="Full configuration scan">Full scan</button>
+                {% else %}
+                <button class="primary small" name="mode" value="full">Run full scan</button>
+                {% endif %}
+              </form>
+              <form method="post" action="{{ url_for('cloud_accounts.delete', account_id=a.id) }}" class="inline"
+                    data-confirm="Remove this account and all of its scan history?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="danger small" title="Remove account">Remove</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <section class="accounts-card" id="account-connect">
+      <header class="account-connect-heading">
+        <div>
+          <h2 class="accounts-card-title">Connect an account</h2>
+          <p class="accounts-card-copy">Add cloud credentials with SecurityAudit / read-only permissions.</p>
+        </div>
+        <span class="read-only-badge">Read-Only Safe</span>
+      </header>
+
+      <form method="post" class="accounts-form" autocomplete="off">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>
+          Display Name
+          <input name="name" required maxlength="80" placeholder="e.g. Production AWS Account">
+        </label>
+        <label>
+          Cloud Provider
+          <select name="provider" id="provider">
+            <option value="aws">Amazon Web Services (AWS)</option>
+            <option value="azure">Microsoft Azure</option>
+            <option value="gcp">Google Cloud Platform (GCP)</option>
+          </select>
+        </label>
+
+        <div class="prov-fields" data-provider="aws">
+          <label>Access Key ID <input name="aws_access_key_id" autocomplete="off" placeholder="AKIA..."></label>
+          <label>Secret Access Key <input type="password" name="aws_secret_access_key" autocomplete="new-password" placeholder="••••••••••••••••••••"></label>
+          <label>Role ARN to assume (optional) <input name="aws_role_arn" placeholder="arn:aws:iam::123456789012:role/SecurityAuditRole"></label>
+        </div>
+
+        <div class="prov-fields" data-provider="azure" hidden>
+          <label>Directory (tenant) ID <input name="azure_tenant_id" autocomplete="off" placeholder="00000000-0000-0000-0000-000000000000"></label>
+          <label>Application (client) ID <input name="azure_client_id" autocomplete="off" placeholder="00000000-0000-0000-0000-000000000000"></label>
+          <label>Client Secret <input type="password" name="azure_client_secret" autocomplete="new-password" placeholder="••••••••••••••••••••"></label>
+          <label>Subscription ID <input name="azure_subscription_id" autocomplete="off" placeholder="00000000-0000-0000-0000-000000000000"></label>
+        </div>
+
+        <div class="prov-fields" data-provider="gcp" hidden>
+          <label>Service Account Key (JSON)
+            <textarea name="gcp_service_account_json" rows="4" placeholder='{ "type": "service_account", "project_id": "...", "private_key": "...", "client_email": "..." }'></textarea>
+          </label>
+        </div>
+
+        <button class="primary accounts-button" type="submit">Connect Account</button>
+      </form>
+    </section>
+
+    <div class="accounts-footnote">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <p style="margin:0;">Credentials are encrypted at rest with Fernet cryptography and used strictly for read-only security compliance evaluations.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

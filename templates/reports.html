@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Audit Reports{% endblock %}
+{% block content %}
+<section class="reports-page">
+  <nav class="breadcrumbs" aria-label="Breadcrumbs">
+    <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+    <span class="separator" aria-hidden="true">/</span>
+    <span class="current">Audit Reports</span>
+  </nav>
+  <div class="reports-hero">
+    <div>
+      <p class="reports-eyebrow">COMPLIANCE &middot; EXPORT ARTIFACTS</p>
+      <h1>Audit Reports</h1>
+      <p class="reports-description">Generate and download comprehensive, shareable compliance snapshots of completed security audits in JSON, CSV, and HTML formats.</p>
+    </div>
+  </div>
+
+  {% if scans %}
+  <div class="reports-table-wrap">
+    <table class="reports-table">
+      <thead>
+        <tr>
+          <th>Audit ID</th>
+          <th>Account</th>
+          <th>Audit Engine</th>
+          <th>Failed / Total Findings</th>
+          <th>Completed Time</th>
+          <th style="text-align:right;">Export Format &amp; Action</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for s in scans %}
+        <tr>
+          <td><strong style="color:var(--text-primary);">#{{ s.id }}</strong></td>
+          <td>
+            <span class="provider-tag tag-{{ s.account.provider }}">{{ s.account.provider|upper }}</span>
+            <span style="font-weight:500;">{{ s.account.name }}</span>
+          </td>
+          <td>
+            <span style="color:var(--text-secondary);font-size:var(--fs-sm);">
+              {{ 'Demo sample' if s.mode == 'demo' else 'Quick Baseline' if s.mode == 'quick' else 'Prowler Engine' }}
+            </span>
+          </td>
+          <td>
+            <strong style="color:{% if s.failed_findings > 0 %}var(--sev-critical){% else %}var(--sev-pass){% endif %};">{{ s.failed_findings }}</strong>
+            <span style="color:var(--text-muted);font-size:var(--fs-sm);"> / {{ s.total_findings }} checks</span>
+          </td>
+          <td style="color:var(--text-muted);font-size:var(--fs-sm);">
+            {{ s.finished_at.strftime('%Y-%m-%d %H:%M') if s.finished_at else '-' }}
+          </td>
+          <td style="text-align:right;">
+            <form method="post" action="{{ url_for('reports.download', scan_id=s.id) }}" style="display:inline-flex;gap:var(--space-8);align-items:center;margin:0;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <select name="format" aria-label="Report format" style="width:auto;padding:var(--space-4) var(--space-8);font-size:var(--fs-sm);">
+                {% for f in formats %}
+                <option value="{{ f }}">{{ f|upper }}</option>
+                {% endfor %}
+              </select>
+              <button class="primary small" type="submit">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:var(--space-4);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download
+              </button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="accounts-card" style="text-align:center;padding:var(--space-48) var(--space-32);">
+    <h2 style="font-family:var(--font-display);font-size:var(--fs-xl);margin-bottom:var(--space-8);">No Completed Scans Available</h2>
+    <p style="color:var(--text-muted);max-width:480px;margin:0 auto var(--space-24);">Audit reports are generated automatically once a cloud scan completes.</p>
+    <a class="button primary" href="{{ url_for('scans.index') }}">View Security Audits</a>
+  </div>
+  {% endif %}
+
+  <div class="reports-footnote">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    <span>Exported security reports serve as compliance evidence for SOC 2 Type II, ISO 27001, and HIPAA auditor reviews.</span>
+  </div>
+</section>
+{% endblock %}

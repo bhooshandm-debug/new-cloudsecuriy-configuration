@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Audit Findings{% endblock %}
+{% block content %}
+<section class="findings-page">
+  <nav class="breadcrumbs" aria-label="Breadcrumbs">
+    <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+    <span class="separator" aria-hidden="true">/</span>
+    {% if filters.scan_id %}
+    <a href="{{ url_for('scans.index') }}">Security Audits</a>
+    <span class="separator" aria-hidden="true">/</span>
+    <span class="current">Scan #{{ filters.scan_id }} Findings</span>
+    {% else %}
+    <span class="current">Audit Findings</span>
+    {% endif %}
+  </nav>
+  <div class="findings-hero">
+    <div style="flex:1;">
+      <p class="findings-eyebrow">SECURITY EVALUATION &middot; FINDINGS INVENTORY</p>
+      <h1>Audit Findings</h1>
+      <p class="dashboard-subtitle">Browse discovered configuration vulnerabilities, compliance discrepancies, and actionable remediation guidelines.</p>
+
+      <form method="get" class="findings-filters">
+        <label>
+          Audit Scan
+          <select name="scan_id">
+            <option value="">All Scans</option>
+            {% for s in scans %}
+            <option value="{{ s.id }}" {{ 'selected' if filters.scan_id == s.id }}>
+              #{{ s.id }} {{ s.account.name }} ({{ s.created_at.strftime('%m/%d %H:%M') }})
+            </option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          Severity
+          <select name="severity">
+            <option value="">All Severities</option>
+            {% for sev in severities %}
+            <option value="{{ sev }}" {{ 'selected' if filters.severity == sev }}>{{ sev|capitalize }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          Status
+          <select name="status">
+            <option value="">All Statuses</option>
+            {% for st in ['FAIL','PASS','MANUAL'] %}
+            <option value="{{ st }}" {{ 'selected' if filters.status == st }}>{{ st }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <button class="primary findings-apply" type="submit">Filter Findings</button>
+      </form>
+    </div>
+  </div>
+
+  {% if page.items %}
+  <div class="findings-results">
+    <div class="findings-results-heading">
+      <h2 style="font-family:var(--font-display);font-size:var(--fs-xl);margin:0;">Discovered Checks</h2>
+      <span style="font-size:var(--fs-sm);color:var(--text-muted);font-weight:500;">
+        Showing <strong>{{ page.items|length }}</strong> of <strong>{{ page.total }}</strong> findings
+      </span>
+    </div>
+
+    <div class="findings-table-wrap">
+      <table class="findings-table">
+        <thead>
+          <tr>
+            <th>Severity</th>
+            <th>Status</th>
+            <th>Check / Control</th>
+            <th>Affected Resource</th>
+            <th>Region</th>
+            <th>Remediation Recommendation</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for f in page.items %}
+          <tr>
+            <td>
+              <span class="badge sev-{{ f.severity }}">{{ f.severity }}</span>
+            </td>
+            <td>
+              <strong style="font-size:var(--fs-sm);color:{% if f.status == 'FAIL' %}var(--sev-critical){% elif f.status == 'PASS' %}var(--sev-pass){% else %}var(--text-muted){% endif %};">
+                {{ f.status }}
+              </strong>
+            </td>
+            <td>
+              <strong style="color:var(--text-primary);display:block;margin-bottom:2px;">{{ f.title }}</strong>
+              <small class="mono muted">{{ f.check_id }}</small>
+            </td>
+            <td class="mono" style="font-size:var(--fs-xs);color:var(--text-secondary);">{{ f.resource or '-' }}</td>
+            <td style="font-size:var(--fs-sm);color:var(--text-muted);">{{ f.region or 'global' }}</td>
+            <td style="font-size:var(--fs-sm);color:var(--text-secondary);max-width:320px;line-height:1.45;">{{ f.remediation or '-' }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="findings-pager">
+      {% if page.has_prev %}
+      <a href="{{ url_for('findings.index', page=page.prev_num, **filters) }}">&larr; Previous</a>
+      {% endif %}
+      <span>Page <strong>{{ page.page }}</strong> of <strong>{{ page.pages }}</strong></span>
+      {% if page.has_next %}
+      <a href="{{ url_for('findings.index', page=page.next_num, **filters) }}">Next &rarr;</a>
+      {% endif %}
+    </div>
+  </div>
+  {% else %}
+  <div class="accounts-card" style="text-align:center;padding:var(--space-48) var(--space-32);">
+    <h2 style="font-family:var(--font-display);font-size:var(--fs-xl);margin-bottom:var(--space-8);">No findings match your criteria</h2>
+    <p style="color:var(--text-muted);max-width:480px;margin:0 auto var(--space-24);">Try relaxing your filter parameters or perform a new security scan on your connected cloud accounts.</p>
+    <a class="button" href="{{ url_for('findings.index') }}">Reset All Filters</a>
+  </div>
+  {% endif %}
+
+  <div class="findings-footnote">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    <span>Severity is determined according to CVSSv3 metrics and potential blast radius in multi-cloud architecture.</span>
+  </div>
+</section>
+{% endblock %}

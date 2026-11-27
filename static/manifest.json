@@ -1,0 +1,26 @@
+{
+  "name": "CloudSec Multi-Cloud Security Audit Platform",
+  "short_name": "CloudSec",
+  "description": "Enterprise-grade automated zero-trust multi-cloud security assessment and compliance audit platform.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080D1A",
+  "theme_color": "#0EA5E9",
+  "icons": [
+    {
+      "src": "/static/images/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/static/images/favicon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/images/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
