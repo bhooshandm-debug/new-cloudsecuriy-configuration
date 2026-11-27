@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: cloudsec-audit
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -w 1 --threads 4 -b 0.0.0.0:$PORT "app:create_app()"
+    healthCheckPath: /login
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FERNET_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
+      - key: SCAN_MODE
+        value: auto
+      - key: DATABASE_URL
+        value: sqlite:///audit.db
+      - key: REPORTS_DIR
+        value: reports
